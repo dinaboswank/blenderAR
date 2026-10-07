@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Baumhaus</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700&display=swap" rel="stylesheet">
+  <script type="module"
+    src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"></script>
+  <style>
+    :root {
+      --flechte: #dfe3d6;
+      --moos: #23301f;
+      --rinde: #6b4f2a;
+      --weiss: #f6f7f2;
+    }
+    html, body { margin: 0; height: 100%; }
+    body {
+      background: var(--flechte);
+      color: var(--moos);
+      font-family: "Bricolage Grotesque", system-ui, sans-serif;
+    }
+    model-viewer {
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      --poster-color: transparent;
+    }
+    #kopf {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      padding: calc(env(safe-area-inset-top) + 16px) 20px 0;
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+      pointer-events: none;
+    }
+    #kopf a {
+      pointer-events: auto;
+      color: var(--moos);
+      font-size: 1rem;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    #kopf a:focus-visible { outline: 3px solid var(--rinde); outline-offset: 3px; }
+    #titel { margin: 0; font-size: 1.5rem; font-weight: 700; }
+    #ar-knopf {
+      position: absolute;
+      left: 50%;
+      bottom: calc(env(safe-area-inset-bottom) + 6%);
+      transform: translateX(-50%);
+      border: 0;
+      border-radius: 999px;
+      padding: 16px 28px;
+      font: 700 17px/1 "Bricolage Grotesque", system-ui, sans-serif;
+      background: var(--moos);
+      color: var(--weiss);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    #ar-knopf:focus-visible { outline: 3px solid var(--rinde); outline-offset: 3px; }
+    #meldung {
+      display: none;
+      position: absolute;
+      left: 0; right: 0;
+      bottom: calc(env(safe-area-inset-bottom) + 6%);
+      text-align: center;
+      padding: 0 1.5em;
+      font-size: 1rem;
+      line-height: 1.4;
+    }
+    #ladebalken {
+      position: absolute;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0;
+      background: var(--rinde);
+      transition: width .2s;
+    }
+  </style>
+</head>
+<body>
+
+  <!--
+    ar-scale="fixed"   = Originalgröße aus Blender (Meter), nicht mit Fingern skalierbar.
+                         Wichtig, damit die Höhe im Baum stimmt.
+    camera-orbit       = Blick in der Vorschau: zweiter Wert über 90deg = von unten
+  -->
+  <model-viewer
+    id="viewer"
+    alt="3D-Modell eines Baumhauses"
+    ar
+    ar-modes="webxr scene-viewer quick-look"
+    ar-placement="floor"
+    ar-scale="fixed"
+    camera-controls
+    camera-orbit="0deg 110deg auto"
+    touch-action="pan-y"
+    shadow-intensity="0"
+    exposure="1">
+    <div id="ladebalken" slot="progress-bar"></div>
+    <button id="ar-knopf" slot="ar-button">Im Baum ansehen</button>
+  </model-viewer>
+
+  <div id="kopf">
+    <a href="index.html">Alle Baumhäuser</a>
+    <h1 id="titel"></h1>
+  </div>
+
+  <div id="meldung"></div>
+
+  <script src="modelle.js"></script>
+  <script>
+    const viewer  = document.getElementById('viewer');
+    const meldung = document.getElementById('meldung');
+    const balken  = document.getElementById('ladebalken');
+
+    const id = new URLSearchParams(location.search).get('id');
+    const modell = MODELLE.find(m => m.id === id);
+
+    if (!modell) {
+      document.getElementById('titel').textContent = 'Nicht gefunden';
+      meldung.textContent = 'Zu diesem Link gibt es kein Modell. Wähle eines aus der Liste.';
+      meldung.style.display = 'block';
+      viewer.style.display = 'none';
+    } else {
+      document.getElementById('titel').textContent = modell.name;
+      document.title = modell.name;
+      viewer.src = 'modelle/' + modell.datei;
+    }
+
+    viewer.addEventListener('progress', (e) => {
+      const p = e.detail.totalProgress;
+      balken.style.width = (p * 100) + '%';
+      if (p === 1) setTimeout(() => balken.style.display = 'none', 300);
+    });
+
+    viewer.addEventListener('load', () => {
+      if (!viewer.canActivateAR) {
+        meldung.textContent = 'Auf diesem Gerät geht AR im Browser nicht. Du kannst das Modell hier drehen und zoomen.';
+        meldung.style.display = 'block';
+      }
+    });
+
+    viewer.addEventListener('error', () => {
+      meldung.textContent = 'Das Modell konnte nicht geladen werden. Stimmt der Dateiname in modelle.js?';
+      meldung.style.display = 'block';
+    });
+  </script>
+</body>
+</html>
