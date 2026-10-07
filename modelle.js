@@ -7,6 +7,9 @@
 //  datei = Dateiname im Ordner "modelle"
 //  bild  = Vorschaubild im Ordner "bilder" (optional, sonst "" lassen)
 //  text  = kurze Beschreibung (optional, sonst "" lassen)
+//  hoehe = optional: Höhe der Baumhaus-Mitte in Metern, um die sich die
+//          Vorschau dreht. Weglassen = wird automatisch geschätzt.
+//          Beispiel: { id: "baumhaus-01", ..., text: "", hoehe: 10.4 },
 // ============================================================
 
 const MODELLE = [

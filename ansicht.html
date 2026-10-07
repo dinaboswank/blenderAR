@@ -6,7 +6,7 @@
   <title>Baumhaus</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&display=swap" rel="stylesheet">
   <script type="module"
     src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"></script>
   <style>
@@ -20,7 +20,7 @@
     body {
       background: var(--flechte);
       color: var(--moos);
-      font-family: "Bricolage Grotesque", system-ui, sans-serif;
+      font-family: "Manrope", system-ui, sans-serif;
     }
     model-viewer {
       width: 100%;
@@ -45,7 +45,7 @@
       text-underline-offset: 3px;
     }
     #kopf a:focus-visible { outline: 3px solid var(--rinde); outline-offset: 3px; }
-    #titel { margin: 0; font-size: 1.5rem; font-weight: 700; }
+    #titel { margin: 0; font-size: 1.5rem; font-weight: 800; letter-spacing: -.02em; }
     #ar-knopf {
       position: absolute;
       left: 50%;
@@ -54,7 +54,7 @@
       border: 0;
       border-radius: 999px;
       padding: 16px 28px;
-      font: 700 17px/1 "Bricolage Grotesque", system-ui, sans-serif;
+      font: 800 17px/1 "Manrope", system-ui, sans-serif;
       background: var(--moos);
       color: var(--weiss);
       cursor: pointer;
@@ -65,7 +65,7 @@
       display: none;
       position: absolute;
       left: 0; right: 0;
-      bottom: calc(env(safe-area-inset-bottom) + 6%);
+      bottom: calc(env(safe-area-inset-bottom) + 6% + 72px);
       text-align: center;
       padding: 0 1.5em;
       font-size: 1rem;
@@ -86,7 +86,9 @@
   <!--
     ar-scale="fixed"   = Originalgröße aus Blender (Meter), nicht mit Fingern skalierbar.
                          Wichtig, damit die Höhe im Baum stimmt.
-    camera-orbit       = Blick in der Vorschau: zweiter Wert über 90deg = von unten
+    Die Vorschau-Kamera wird unten im Script auf das Baumhaus ausgerichtet:
+    Start von unten, Drehen rundum und von ganz unten bis ganz oben,
+    das Baumhaus bleibt dabei in seiner Höhe.
   -->
   <model-viewer
     id="viewer"
@@ -96,8 +98,9 @@
     ar-placement="floor"
     ar-scale="fixed"
     camera-controls
-    camera-orbit="0deg 110deg auto"
-    touch-action="pan-y"
+    disable-pan
+    interaction-prompt="none"
+    touch-action="none"
     shadow-intensity="0"
     exposure="1">
     <div id="ladebalken" slot="progress-bar"></div>
@@ -128,7 +131,7 @@
     } else {
       document.getElementById('titel').textContent = modell.name;
       document.title = modell.name;
-      viewer.src = 'modelle/' + modell.datei;
+      viewer.src = 'modelle/' + modell.datei;  // Modelle liegen im Ordner modelle
     }
 
     viewer.addEventListener('progress', (e) => {
@@ -138,6 +141,22 @@
     });
 
     viewer.addEventListener('load', () => {
+      // --- Kamera auf das Baumhaus ausrichten ---
+      const groesse = viewer.getDimensions();          // Gesamtmaße inkl. Bodenwürfel
+      const mitte   = viewer.getBoundingBoxCenter();
+      const oben    = mitte.y + groesse.y / 2;
+      // Höhe der Baumhaus-Mitte: aus modelle.js, sonst geschätzt (knapp unter der Oberkante)
+      const hoehe   = (typeof modell.hoehe === 'number')
+                      ? modell.hoehe
+                      : oben - Math.min(0.5, groesse.y / 2);
+      const abstand = Math.max(groesse.x, groesse.z) * 1.8 + 1;
+
+      viewer.cameraTarget   = `${mitte.x}m ${hoehe}m ${mitte.z}m`;
+      viewer.cameraOrbit    = `0deg 125deg ${abstand}m`;          // Start: schräg von unten
+      viewer.minCameraOrbit = `auto 1deg ${abstand * 0.3}m`;      // fast senkrecht von oben …
+      viewer.maxCameraOrbit = `auto 179deg ${abstand * 3}m`;      // … bis fast senkrecht von unten
+      viewer.jumpCameraToGoal();
+
       if (!viewer.canActivateAR) {
         meldung.textContent = 'Auf diesem Gerät geht AR im Browser nicht. Du kannst das Modell hier drehen und zoomen.';
         meldung.style.display = 'block';
@@ -145,7 +164,9 @@
     });
 
     viewer.addEventListener('error', () => {
-      meldung.textContent = 'Das Modell konnte nicht geladen werden. Stimmt der Dateiname in modelle.js?';
+      document.getElementById('ar-knopf').style.display = 'none';
+      meldung.style.bottom = 'calc(env(safe-area-inset-bottom) + 6%)';
+      meldung.textContent = 'Das Modell konnte nicht geladen werden. Gesucht wird: modelle/' + modell.datei;
       meldung.style.display = 'block';
     });
   </script>

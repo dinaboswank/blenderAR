@@ -6,7 +6,7 @@
   <title>Baumhäuser</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&display=swap" rel="stylesheet">
   <style>
     :root {
       --flechte: #dfe3d6;
@@ -20,7 +20,7 @@
       margin: 0;
       background: var(--flechte);
       color: var(--moos);
-      font-family: "Bricolage Grotesque", system-ui, sans-serif;
+      font-family: "Manrope", system-ui, sans-serif;
       padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
     }
     header {
@@ -32,8 +32,8 @@
       font-size: clamp(2.6rem, 12vw, 6rem);
       line-height: .9;
       margin: 0 0 .4em;
-      font-weight: 700;
-      letter-spacing: -.02em;
+      font-weight: 800;
+      letter-spacing: -.04em;
     }
     header p {
       margin: 0;
@@ -55,18 +55,17 @@
       color: inherit;
       text-decoration: none;
     }
-    a:focus-visible { outline: 3px solid var(--rinde); outline-offset: 4px; border-radius: 4px; }
+    a:focus-visible { outline: 3px solid var(--rinde); outline-offset: 4px; }
     .bild {
       aspect-ratio: 3 / 4;
       background: var(--blatt);
-      border-radius: 4px 4px 40% 40% / 4px 4px 12% 12%;
       overflow: hidden;
       display: grid;
       place-items: center;
     }
     .bild img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .bild .ersatz { font-size: 3rem; font-weight: 700; color: var(--weiss); }
-    .name { font-weight: 700; font-size: 1.1rem; margin: .5em 0 .1em; }
+    .bild .ersatz { font-size: 3rem; font-weight: 800; color: var(--weiss); }
+    .name { font-weight: 600; font-size: 1.1rem; margin: .5em 0 .1em; }
     .text { font-size: .95rem; line-height: 1.35; opacity: .8; margin: 0; }
   </style>
 </head>
@@ -102,7 +101,7 @@
           box.innerHTML = '';
           box.appendChild(img);
         };
-        img.src = 'bilder/' + m.bild;
+        img.src = 'bilder/' + m.bild;  // Bilder liegen im Ordner bilder
       }
       liste.appendChild(li);
     });
