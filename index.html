@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AR</title>
+
+  <!-- A-Frame (3D) und MindAR (Bilderkennung) -->
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
+  <style>
+    html, body { margin: 0; height: 100%; overflow: hidden; background: #000; }
+    #hinweis {
+      position: fixed; left: 0; right: 0; bottom: 8%;
+      z-index: 10; text-align: center; pointer-events: none;
+      font: 500 17px/1.4 system-ui, sans-serif; color: #fff;
+      text-shadow: 0 1px 4px rgba(0,0,0,.8);
+      padding: 0 1.5em; transition: opacity .4s;
+    }
+    #hinweis.weg { opacity: 0; }
+  </style>
+</head>
+<body>
+
+  <div id="hinweis">Modell wird geladen …</div>
+
+  <!--
+    targets.mind = kompiliertes Marker-Bild
+    maxTrack: 1 = es wird immer nur ein Marker gleichzeitig verfolgt
+  -->
+  <a-scene
+    mindar-image="imageTargetSrc: ./targets.mind; maxTrack: 1; uiScanning: no; uiLoading: no"
+    color-space="sRGB"
+    renderer="colorManagement: true; physicallyCorrectLights: true"
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false">
+
+    <a-assets>
+      <!-- Dateiname muss exakt stimmen (Groß-/Kleinschreibung!) -->
+      <a-asset-item id="modell" src="./modell.glb"></a-asset-item>
+    </a-assets>
+
+    <!-- Licht, damit das Modell nicht schwarz erscheint -->
+    <a-entity light="type: ambient; intensity: 1.2"></a-entity>
+    <a-entity light="type: directional; intensity: 1.5" position="1 2 2"></a-entity>
+
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+    <!-- Marker Nr. 0 (das erste Bild in targets.mind) -->
+    <a-entity id="marker0" mindar-image-target="targetIndex: 0">
+      <!--
+        Größe: Die Breite des Marker-Bilds entspricht 1 Einheit.
+        scale anpassen, bis das Modell passt.
+        Marker liegt flach auf Tisch/Boden? Dann rotation="90 0 0" ergänzen.
+      -->
+      <a-gltf-model
+        src="#modell"
+        position="0 0 0"
+        rotation="0 0 0"
+        scale="0.5 0.5 0.5">
+      </a-gltf-model>
+    </a-entity>
+
+  </a-scene>
+
+  <script>
+    const hinweis = document.getElementById('hinweis');
+    const szene = document.querySelector('a-scene');
+    const marker = document.getElementById('marker0');
+
+    szene.addEventListener('arReady', () => {
+      hinweis.textContent = 'Kamera auf das Bild richten';
+    });
+
+    szene.addEventListener('arError', () => {
+      hinweis.textContent = 'Kamera nicht verfügbar. Bitte Kamerazugriff erlauben und die Seite neu laden.';
+    });
+
+    marker.addEventListener('targetFound', () => hinweis.classList.add('weg'));
+    marker.addEventListener('targetLost', () => hinweis.classList.remove('weg'));
+  </script>
+</body>
+</html>
